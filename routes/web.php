@@ -1,43 +1,66 @@
-
 <?php
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
-// Menampilkan daftar mahasiswa
-Route::get('/mahasiswa/{nim?}', function (?string $nim = null) {
+// Menampilkan, mencari, dan memfilter data mahasiswa
+Route::get('/mahasiswa', function (Request $request) {
     try {
         $pdo = DB::connection()->getPdo();
 
+        $q = trim($request->query('q', ''));
+        $programStudiId = $request->query('program_studi_id');
+
         $sql = 'SELECT m.nim, m.nama, m.email, m.usia,
-                    p.nama_prodi
+                       p.nama_prodi, m.program_studi_id
                 FROM mahasiswa AS m
                 JOIN program_studi AS p
                     ON p.id = m.program_studi_id';
 
-        if ($nim !== null) {
-            $sql .= ' WHERE m.nim = :nim';
+        $conditions = [];
+        $params = [];
+
+        if ($q !== '') {
+            $conditions[] = '(m.nim LIKE :q_nim
+                              OR m.nama LIKE :q_nama
+                              OR m.email LIKE :q_email)';
+
+            $keyword = '%' . $q . '%';
+
+            $params['q_nim'] = $keyword;
+            $params['q_nama'] = $keyword;
+            $params['q_email'] = $keyword;
+        }
+
+        if ($programStudiId !== null && $programStudiId !== '') {
+            $conditions[] = 'm.program_studi_id = :program_studi_id';
+            $params['program_studi_id'] = $programStudiId;
+        }
+
+        if (!empty($conditions)) {
+            $sql .= ' WHERE ' . implode(' AND ', $conditions);
         }
 
         $sql .= ' ORDER BY m.nim';
 
         $statement = $pdo->prepare($sql);
-        $statement->execute($nim !== null ? ['nim' => $nim] : []);
-
+        $statement->execute($params);
         $daftarMahasiswa = $statement->fetchAll(\PDO::FETCH_ASSOC);
 
         $statementProdi = $pdo->prepare(
-            'SELECT id, nama_prodi FROM program_studi ORDER BY nama_prodi'
+            'SELECT id, nama_prodi
+             FROM program_studi
+             ORDER BY nama_prodi'
         );
         $statementProdi->execute();
-
         $daftarProgramStudi = $statementProdi->fetchAll(\PDO::FETCH_ASSOC);
 
         return view('mahasiswa', compact(
             'daftarMahasiswa',
             'daftarProgramStudi',
-            'nim'
+            'q',
+            'programStudiId'
         ));
     } catch (\Throwable $error) {
         report($error);
@@ -49,14 +72,15 @@ Route::get('/mahasiswa/{nim?}', function (?string $nim = null) {
     }
 })->name('mahasiswa.index');
 
-// Menyimpan data mahasiswa
+
+// Menyimpan mahasiswa baru
 Route::post('/mahasiswa', function (Request $request) {
     $data = $request->validate([
         'nim' => 'required|digits_between:8,12',
         'nama' => 'required|string|max:100',
         'email' => 'required|email|max:100',
         'usia' => 'required|integer|min:1',
-        'program_studi_id' => 'required|integer',
+        'program_studi_id' => 'required|integer|exists:program_studi,id',
     ], [
         'nim.required' => 'NIM wajib diisi.',
         'nim.digits_between' => 'NIM harus terdiri dari 8 sampai 12 digit.',

@@ -65,13 +65,40 @@
         <button type="submit">Tambah Data</button>
     </form>
 
+    <hr>
+
     <h2>Daftar Mahasiswa</h2>
 
-    @if ($nim)
-        <p>Filter NIM: {{ $nim }}</p>
-    @else
-        <p>Menampilkan semua data.</p>
-    @endif
+    <form action="{{ route('mahasiswa.index') }}" method="GET">
+        <p>
+            <label for="q">Cari mahasiswa (NIM, nama, atau email):</label><br>
+            <input
+                type="text"
+                id="q"
+                name="q"
+                value="{{ $q }}"
+                placeholder="Masukkan kata kunci"
+            >
+        </p>
+
+        <p>
+            <label for="program_studi_id">Filter Program Studi:</label><br>
+            <select id="program_studi_id" name="program_studi_id">
+                <option value="">Semua Program Studi</option>
+                @foreach ($daftarProgramStudi as $prodi)
+                    <option value="{{ $prodi['id'] }}"
+                        {{ (string) $programStudiId === (string) $prodi['id'] ? 'selected' : '' }}>
+                        {{ $prodi['nama_prodi'] }}
+                    </option>
+                @endforeach
+            </select>
+        </p>
+
+        <button type="submit">Cari / Filter</button>
+        <a href="{{ route('mahasiswa.index') }}">Reset</a>
+    </form>
+
+    <br>
 
     <table border="1" cellpadding="6" cellspacing="0">
         <thead>

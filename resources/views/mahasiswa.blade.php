@@ -81,8 +81,10 @@
                 <th>Email</th>
                 <th>Usia</th>
                 <th>Program Studi</th>
+                <th>Aksi</th>
             </tr>
         </thead>
+
         <tbody>
             @forelse ($daftarMahasiswa as $mahasiswa)
                 <tr>
@@ -91,17 +93,29 @@
                     <td>{{ $mahasiswa['email'] }}</td>
                     <td>{{ $mahasiswa['usia'] }}</td>
                     <td>{{ $mahasiswa['nama_prodi'] }}</td>
+                    <td>
+                        <a href="{{ route('mahasiswa.edit', ['nim' => $mahasiswa['nim']]) }}">
+                            Ubah
+                        </a>
+
+                        <form
+                            action="{{ route('mahasiswa.destroy', ['nim' => $mahasiswa['nim']]) }}"
+                            method="POST"
+                            style="display: inline;"
+                            onsubmit="return confirm('Yakin ingin menghapus data mahasiswa ini?')"
+                        >
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit">Hapus</button>
+                        </form>
+                    </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5">Data tidak ditemukan.</td>
+                    <td colspan="6">Data tidak ditemukan.</td>
                 </tr>
             @endforelse
         </tbody>
     </table>
-
-    @if ($nim)
-        <p><a href="{{ url('/mahasiswa') }}">Tampilkan semua data</a></p>
-    @endif
 </body>
 </html>

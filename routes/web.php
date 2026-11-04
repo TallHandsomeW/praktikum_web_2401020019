@@ -3,6 +3,15 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\BukuController;
+
+Route::get('/', function () {
+    return view('welcome');
+});
+
+Route::get('/buku', [BukuController::class, 'index']);
+
+Route::get('/buku/{kode}', [BukuController::class, 'show']);
 
 // Menampilkan, mencari, dan memfilter data mahasiswa
 Route::get('/mahasiswa', function (Request $request) {

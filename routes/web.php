@@ -9,9 +9,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/buku', [BukuController::class, 'index']);
+Route::resource('buku', BukuController::class)->except('show');
 
-Route::get('/buku/{kode}', [BukuController::class, 'show']);
+Route::get('/buku/{kode}', [BukuController::class, 'show'])
+    ->name('buku.show');
 
 // Menampilkan, mencari, dan memfilter data mahasiswa
 Route::get('/mahasiswa', function (Request $request) {

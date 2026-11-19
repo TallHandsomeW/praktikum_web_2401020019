@@ -7,6 +7,13 @@
 <body>
     <h1>Data Buku</h1>
 
+    <p>Masuk sebagai {{ auth()->user()->name }}</p>
+
+    <form method="POST" action="{{ route('logout') }}">
+        @csrf
+        <button type="submit">Keluar</button>
+    </form>
+
     <a href="{{ route('buku.create') }}">Tambah Buku</a>
     <br><br>
     <p>Praktikum Pemrograman Web</p>

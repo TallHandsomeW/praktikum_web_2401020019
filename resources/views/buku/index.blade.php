@@ -7,14 +7,17 @@
 <body>
     <h1>Data Buku</h1>
 
-    <p>Masuk sebagai {{ auth()->user()->name }}</p>
+    <p>Masuk sebagai {{ auth()->user()->name }} ({{ auth()->user()->role }})</p>
 
     <form method="POST" action="{{ route('logout') }}">
         @csrf
         <button type="submit">Keluar</button>
     </form>
 
-    <a href="{{ route('buku.create') }}">Tambah Buku</a>
+    @can('admin')
+        <a href="{{ route('buku.create') }}">Tambah Buku</a>
+    @endcan
+
     <br><br>
     <p>Praktikum Pemrograman Web</p>
 
@@ -35,10 +38,12 @@
             <th>Judul</th>
             <th>Kategori</th>
             <th>Detail</th>
-            <th>Aksi</th>
+
+            @can('admin')
+                <th>Aksi</th>
+            @endcan
         </tr>
 
-        
         @foreach ($buku as $item)
             <tr>
                 <td>{{ $item->kode }}</td>
@@ -49,18 +54,21 @@
                         Lihat
                     </a>
                 </td>
-                <td>
-                    <a href="{{ route('buku.edit', $item->id) }}">
-                        Edit
-                    </a>
 
-                    <form action="{{ route('buku.destroy', $item->id) }}" method="POST">
-                        @csrf
-                        @method('DELETE')
+                @can('admin')
+                    <td>
+                        <a href="{{ route('buku.edit', $item->id) }}">
+                            Edit
+                        </a>
 
-                        <button type="submit">Hapus</button>
-                    </form>
-                </td>
+                        <form action="{{ route('buku.destroy', $item->id) }}" method="POST">
+                            @csrf
+                            @method('DELETE')
+
+                            <button type="submit">Hapus</button>
+                        </form>
+                    </td>
+                @endcan
             </tr>
         @endforeach
     </table>
